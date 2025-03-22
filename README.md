@@ -30,7 +30,7 @@ mv .env.example .env
 cd ..
 ```
 
-Now install the dependencies
+Now install the dependencies.
 ```shell
 cd server
 yarn
