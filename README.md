@@ -47,7 +47,7 @@ yarn start
 ```
 For Backend.
 
-Open another terminal in folder, Also make sure mongodb is running in background.
+Open another terminal in folder and also make sure mongodb is running in background.
 ```shell
 cd server
 yarn start
