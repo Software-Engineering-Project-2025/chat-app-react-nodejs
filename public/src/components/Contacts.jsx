@@ -36,9 +36,9 @@ export default function Contacts({ contacts, changeChat }) {
                   onClick={() => changeCurrentChat(index, contact)}
                 >
                   <div className="avatar">
-                    <img
-                      src={`data:image/svg+xml;base64,${contact.avatarImage}`}
-                      alt=""
+                    {/* Render SVG inline */}
+                    <div
+                      dangerouslySetInnerHTML={{ __html: currentUserImage }}
                     />
                   </div>
                   <div className="username">
@@ -50,12 +50,9 @@ export default function Contacts({ contacts, changeChat }) {
           </div>
           <div className="current-user">
             <div className="avatar">
-              <img
-                src={`data:image/svg+xml;base64,${currentUserImage}`}
-                alt="avatar"
-              />
+              <div style={{width:"70px",height:"70px"}} dangerouslySetInnerHTML={{ __html: currentUserImage }} />
             </div>
-            <div className="username">
+            <div onClick={()=>console.log(currentUserImage)} className="username">
               <h2>{currentUserName}</h2>
             </div>
           </div>
