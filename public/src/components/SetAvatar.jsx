@@ -5,12 +5,16 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import multiavatar from "@multiavatar/multiavatar/esm";
+import axios from "axios";
+import { host } from "../utils/APIRoutes";
 
 export default function SetAvatar() {
   const navigate = useNavigate();
   const [avatars, setAvatars] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAvatar, setSelectedAvatar] = useState(undefined);
+  const host = "http://localhost:5000/api/auth";
+
 
   const toastOptions = {
     position: "bottom-right",
@@ -42,27 +46,29 @@ export default function SetAvatar() {
   }, [navigate]);
 
   const setProfilePicture = async () => {
-    if (selectedAvatar === undefined) {
-      toast.error("Please select an avatar", toastOptions);
-    } else {
-      // Kullanıcı bilgilerini localStorage'tan al
-      const user = JSON.parse(
-        localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
-      );
+  if (selectedAvatar === undefined) {
+    toast.error("Please select an avatar image.");
+  } else {
+    // Retrieve current user from localStorage (or the auth context if you're using one)
+    const user = await JSON.parse(localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY));
+    
+    // The selected avatar, passed as Base64 or image URL (from your avatar options)
+    const avatarImage = avatars[selectedAvatar]; 
 
-      // Seçilen avatarı localStorage'a kaydet (veritabanına değil!)
+    // Send the POST request to save the avatar in MongoDB
+    const response = await axios.post(`${host}/setavatar/${user._id}`, { image: avatarImage });
+
+    // Update the user in the local storage after saving it to the DB
+    if (response.data.isSet) {
       user.isAvatarImageSet = true;
-      user.avatarImage = avatars[selectedAvatar];
-
-      localStorage.setItem(
-        process.env.REACT_APP_LOCALHOST_KEY,
-        JSON.stringify(user)
-      );
-
-      toast.success("Avatar set successfully!");
-      navigate("/");
+      user.avatarImage = response.data.image;
+      localStorage.setItem(process.env.REACT_APP_LOCALHOST_KEY, JSON.stringify(user));
+      navigate("/");  // Redirect to home or another page
+    } else {
+      toast.error("Error saving avatar. Please try again.");
     }
-  };
+  }
+};
 
   return (
     <>
