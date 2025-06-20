@@ -43,24 +43,34 @@ global.onlineUsers = new Map();
 io.on("connection", (socket) => {
   global.chatSocket = socket;
   socket.on("ImOnline", (userId) => {
-    onlineUsers.set(userId, socket.id);
-    io.emit("getOnlineUsers", Array.from(onlineUsers.keys()));
+    global.onlineUsers.set(userId, socket.id);
+    io.emit("getOnlineUsers", Array.from(global.onlineUsers.keys()));
   });
-  
 
   socket.on("send-msg", (data) => {
-    const sendUserSocket = onlineUsers.get(data.to);
+    console.log("data", data);
+
+    const sendUserSocket = global.onlineUsers.get(data.to);
+
     if (sendUserSocket) {
-      socket.to(sendUserSocket).emit("msg-recieve", data.msg);
+      io.to(sendUserSocket).emit("msg-recieve", data.msg);
     }
   });
+  socket.on("send-changed-msg",(data)=>{
+    console.log("did you get socket?",data);
+    
+    const findUserSocket = global.onlineUsers.get(data.to);
+    if (findUserSocket) {
+      io.to(findUserSocket).emit("msg-changed", data);
+    }
+  })
 
-  socket.on("disconnect",()=>{
+  socket.on("disconnect", () => {
     onlineUsers.forEach((value, key) => {
       if (value === socket.id) {
         onlineUsers.delete(key);
       }
     });
     io.emit("getOnlineUsers", Array.from(onlineUsers.keys()));
-  })
+  });
 });
