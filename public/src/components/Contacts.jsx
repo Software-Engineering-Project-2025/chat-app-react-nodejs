@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Logo from "../assets/logo.svg";
 
-export default function Contacts({ contacts, changeChat }) {
+export default function Contacts({ contacts, changeChat, onlineUsers }) {
   const [currentUserName, setCurrentUserName] = useState(undefined);
   const [currentUserImage, setCurrentUserImage] = useState(undefined);
   const [currentSelected, setCurrentSelected] = useState(undefined);
@@ -41,8 +41,43 @@ export default function Contacts({ contacts, changeChat }) {
                       dangerouslySetInnerHTML={{ __html: currentUserImage }}
                     />
                   </div>
-                  <div className="username">
+                  <div
+                    onClick={() => console.log(onlineUsers, contact._id)}
+                    style={{
+                      display: "flex",
+                      flexDirection:"column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    className="username"
+                  >
                     <h3>{contact.username}</h3>
+                    {onlineUsers.includes(contact._id)? (
+                      <div style={{ display: "flex",gap:"5px",alignItems:"center",paddingRight:"20px"}}>
+                        <p
+                          style={{
+                            width: "10px",
+                            height: "10px",
+                            borderRadius: "50px",
+                            backgroundColor: "green",
+                          }}
+                        ></p>
+                        <p style={{fontSize:"14px",color:"green"}}>online</p>
+                      </div>
+                    ) :(
+                      <div style={{ display: "flex",gap:"5px",alignItems:"center",paddingRight:"20px"}}>
+                        <p
+                          style={{
+                            width: "10px",
+                            height: "10px",
+                            borderRadius: "50px",
+                            backgroundColor: "gray",
+                          }}
+                        ></p>
+                        <p style={{fontSize:"14px",color:"gray"}}>offline</p>
+                      </div>
+                    )
+                  }
                   </div>
                 </div>
               );
@@ -50,9 +85,15 @@ export default function Contacts({ contacts, changeChat }) {
           </div>
           <div className="current-user">
             <div className="avatar">
-              <div style={{width:"70px",height:"70px"}} dangerouslySetInnerHTML={{ __html: currentUserImage }} />
+              <div
+                style={{ width: "70px", height: "70px" }}
+                dangerouslySetInnerHTML={{ __html: currentUserImage }}
+              />
             </div>
-            <div onClick={()=>console.log(currentUserImage)} className="username">
+            <div
+              onClick={() => console.log(currentUserImage)}
+              className="username"
+            >
               <h2>{currentUserName}</h2>
             </div>
           </div>
