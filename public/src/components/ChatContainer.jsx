@@ -34,8 +34,8 @@ export default function ChatContainer({ currentChat, socket, currentId }) {
 
   useEffect(() => {
     if (socket.current) {
-      socket.current.on("msg-recieve", (msg) => {
-        setArrivalMessage({ fromSelf: false, message: msg });
+      socket.current.on("msg-recieve", (data) => {
+        setArrivalMessage({ fromSelf: false, message: data.msg,messageId:data.messageId });
       });
 
       socket.current.on("msg-changed", (data) => {
@@ -79,6 +79,7 @@ export default function ChatContainer({ currentChat, socket, currentId }) {
       message: msg,
     });
     socket.current.emit("send-msg", {
+      messageId:response.data,
       to: currentChat._id,
       from: data._id,
       msg,
