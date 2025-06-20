@@ -42,9 +42,11 @@ const io = socket(server, {
 global.onlineUsers = new Map();
 io.on("connection", (socket) => {
   global.chatSocket = socket;
-  socket.on("add-user", (userId) => {
+  socket.on("ImOnline", (userId) => {
     onlineUsers.set(userId, socket.id);
+    io.emit("getOnlineUsers", Array.from(onlineUsers.keys()));
   });
+  
 
   socket.on("send-msg", (data) => {
     const sendUserSocket = onlineUsers.get(data.to);
@@ -52,4 +54,13 @@ io.on("connection", (socket) => {
       socket.to(sendUserSocket).emit("msg-recieve", data.msg);
     }
   });
+
+  socket.on("disconnect",()=>{
+    onlineUsers.forEach((value, key) => {
+      if (value === socket.id) {
+        onlineUsers.delete(key);
+      }
+    });
+    io.emit("getOnlineUsers", Array.from(onlineUsers.keys()));
+  })
 });
