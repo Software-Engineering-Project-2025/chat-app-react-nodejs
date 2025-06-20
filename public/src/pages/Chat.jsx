@@ -14,6 +14,56 @@ export default function Chat() {
   const [contacts, setContacts] = useState([]);
   const [currentChat, setCurrentChat] = useState(undefined);
   const [currentUser, setCurrentUser] = useState(undefined);
+  const [onlineUsers, setOnlineUsers] = useState();
+
+  useEffect(() => {
+    const checkUser = async () => {
+      if (!localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
+        navigate("/login");
+      } else {
+        const storedUser = await JSON.parse(
+          localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
+        );
+        setCurrentUser(storedUser);
+      }
+    };
+    checkUser();
+  }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      socket.current = io(host); 
+      socket.current.emit("ImOnline", currentUser._id);
+
+      socket.current.on("getOnlineUsers", (users) => {
+        const filteredUsers = users.filter((user)=>user!==currentUser._id)
+        console.log("filteredUser",filteredUsers);
+        setOnlineUsers(filteredUsers);
+      });
+
+      return () => {
+        if (socket.current) {
+          socket.current.off("getOnlineUsers");
+          socket.current.disconnect();
+        }
+      };
+    }
+  }, [currentUser,socket]);
+
+  useEffect(() => {
+    const getContacts = async () => {
+      if (currentUser) {
+        if (currentUser.isAvatarImageSet) {
+          const data = await axios.get(`${allUsersRoute}/${currentUser._id}`);
+          setContacts(data.data);
+        } else {
+          navigate("/setAvatar");
+        }
+      }
+    };
+    getContacts();
+  }, [currentUser]);
+
   useEffect(async () => {
     if (!localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
       navigate("/login");
@@ -49,11 +99,15 @@ export default function Chat() {
     <>
       <Container>
         <div className="container">
-          <Contacts contacts={contacts} changeChat={handleChatChange} />
+          <Contacts
+            contacts={contacts}
+            changeChat={handleChatChange}
+            onlineUsers={onlineUsers}
+          />
           {currentChat === undefined ? (
             <Welcome />
           ) : (
-            <ChatContainer currentChat={currentChat} socket={socket} />
+            <ChatContainer currentChat={currentChat} socket={socket} currentId={currentUser._id} />
           )}
         </div>
       </Container>
