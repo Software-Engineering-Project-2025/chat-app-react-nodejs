@@ -31,24 +31,26 @@ export default function Chat() {
   }, []);
 
   useEffect(() => {
-    if (currentUser) {
-      socket.current = io(host); 
+    if (currentUser && !socket.current) {
+      socket.current = io(host);
+
       socket.current.emit("ImOnline", currentUser._id);
 
       socket.current.on("getOnlineUsers", (users) => {
-        const filteredUsers = users.filter((user)=>user!==currentUser._id)
-        console.log("filteredUser",filteredUsers);
+        const filteredUsers = users.filter((user) => user !== currentUser._id);
+        console.log("filteredUser", filteredUsers);
         setOnlineUsers(filteredUsers);
       });
-
-      return () => {
-        if (socket.current) {
-          socket.current.off("getOnlineUsers");
-          socket.current.disconnect();
-        }
-      };
     }
-  }, [currentUser,socket]);
+
+    return () => {
+      if (socket.current) {
+        socket.current.off("getOnlineUsers");
+        socket.current.disconnect();
+        socket.current = null; 
+      }
+    };
+  }, [currentUser]);
 
   useEffect(() => {
     const getContacts = async () => {
@@ -75,12 +77,8 @@ export default function Chat() {
       );
     }
   }, []);
-  useEffect(() => {
-    if (currentUser) {
-      socket.current = io(host);
-      socket.current.emit("add-user", currentUser._id);
-    }
-  }, [currentUser]);
+  
+  
 
   useEffect(async () => {
     if (currentUser) {
@@ -107,7 +105,11 @@ export default function Chat() {
           {currentChat === undefined ? (
             <Welcome />
           ) : (
-            <ChatContainer currentChat={currentChat} socket={socket} currentId={currentUser._id} />
+            <ChatContainer
+              currentChat={currentChat}
+              socket={socket}
+              currentId={currentUser._id}
+            />
           )}
         </div>
       </Container>
