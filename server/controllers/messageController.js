@@ -15,7 +15,7 @@ module.exports.getMessages = async (req, res, next) => {
       try {
         decrypted = decrypt(msg.message.text);
       } catch (err) {
-        console.error("❌ Decryption failed:", err.message);
+        console.error("Decryption failed:", err.message);
       }
 
       return {
@@ -50,7 +50,7 @@ module.exports.addMessage = async (req, res, next) => {
     });
 
     if (data) {
-      return res.json(data._id);
+      return res.json(data._id); 
     } else {
       return res.status(500).json({ msg: "Failed to add message to the database" });
     }
@@ -77,12 +77,30 @@ module.exports.editMessage = async (req, res) => {
     );
 
     if (updatedMessage) {
-      return res.json(newMessage); 
+      return res.json(newMessage);
     } else {
       return res.status(404).json({ msg: "Message not found." });
     }
   } catch (error) {
     console.error("editMessage error:", error);
+    return res.status(500).json({ msg: "Internal server error." });
+  }
+};
+
+module.exports.deleteMessage = async (req, res) => {
+  const { messageId } = req.body;
+  if (!messageId) {
+    return res.status(400).json({ msg: "Missing required fields." });
+  }
+  try {
+    const deleted = await Messages.findByIdAndDelete(messageId);
+    if (deleted) {
+      return res.json({ success: true });
+    } else {
+      return res.status(404).json({ msg: "Message not found." });
+    }
+  } catch (error) {
+    console.error("deleteMessage error:", error);
     return res.status(500).json({ msg: "Internal server error." });
   }
 };
