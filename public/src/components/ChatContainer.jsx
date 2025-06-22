@@ -5,7 +5,7 @@ import Logout from "./Logout";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import { sendMessageRoute, recieveMessageRoute } from "../utils/APIRoutes";
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import { IoMdSend } from "react-icons/io";
 
 export default function ChatContainer({ currentChat, socket, currentId }) {
@@ -54,12 +54,17 @@ export default function ChatContainer({ currentChat, socket, currentId }) {
           )
         );
       });
+
+      socket.current.on("msg-deleted", (data) => {
+        setMessages((prev) => prev.filter((msg) => msg.messageId !== data.messageId));
+      });
     }
 
     return () => {
       if (socket.current) {
         socket.current.off("msg-recieve");
         socket.current.off("msg-changed");
+        socket.current.off("msg-deleted");
       }
     };
   }, [socket, messages]);
@@ -130,6 +135,22 @@ export default function ChatContainer({ currentChat, socket, currentId }) {
     }
   };
 
+  const handleDeleteMessage = async (messageId) => {
+    try {
+      const data = await JSON.parse(localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY));
+      await axios.delete("http://localhost:5000/api/messages/deletemsg", {
+        data: { messageId },
+      });
+      setMessages((prev) => prev.filter((msg) => msg.messageId !== messageId));
+      socket.current.emit("send-deleted-msg", {
+        messageId,
+        to: currentChat._id,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <Container>
       <div className="chat-header">
@@ -155,21 +176,28 @@ export default function ChatContainer({ currentChat, socket, currentId }) {
                 className="content"
               >
                 {message.fromSelf && (
-                  <span className="edit-icon">
-                    <FaEdit
-                      onClick={() => {
-                        console.log(messages);
-
-                        if (editingMessageId === message.messageId) {
-                          setEditingMessageId(null);
-                          setNewMessage("");
-                        } else {
-                          setEditingMessageId(message.messageId);
-                          setNewMessage(message.message);
-                        }
-                      }}
-                    />
-                  </span>
+                  <>
+                    <span className="edit-icon">
+                      <FaEdit
+                        onClick={() => {
+                          if (editingMessageId === message.messageId) {
+                            setEditingMessageId(null);
+                            setNewMessage("");
+                          } else {
+                            setEditingMessageId(message.messageId);
+                            setNewMessage(message.message);
+                          }
+                        }}
+                      />
+                    </span>
+                    <span className="delete-icon">
+                      <FaTrash
+                        onClick={() => handleDeleteMessage(message.messageId)}
+                        style={{ marginLeft: "0.5rem", color: "#e57373", cursor: "pointer" }}
+                        title="Delete message"
+                      />
+                    </span>
+                  </>
                 )}
 
                 {editingMessageId === message.messageId ? (
@@ -364,5 +392,14 @@ const Container = styled.div`
 
   .message.editing .edit-icon {
     display: inline-block;
+  }
+
+  .delete-icon {
+    display: inline-block;
+    margin-left: 0.5rem;
+    color: #e57373;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: color 0.2s ease;
   }
 `;
