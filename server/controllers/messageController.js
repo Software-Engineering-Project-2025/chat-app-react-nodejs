@@ -28,7 +28,7 @@ module.exports.getMessages = async (req, res, next) => {
     
     res.json(projectedMessages);
   } catch (ex) {
-    console.error("❌ getMessages error:", ex);
+    console.error("getMessages error:", ex);
     res.status(500).json({ msg: "Error retrieving messages" });
   }
 };
@@ -50,12 +50,12 @@ module.exports.addMessage = async (req, res, next) => {
     });
 
     if (data) {
-      return res.json(data._id); // ✅ Return message ID directly
+      return res.json(data._id);
     } else {
       return res.status(500).json({ msg: "Failed to add message to the database" });
     }
   } catch (ex) {
-    console.error("❌ addMessage error:", ex);
+    console.error("addMessage error:", ex);
     res.status(500).json({ msg: "Server error while adding message" });
   }
 };
@@ -68,7 +68,7 @@ module.exports.editMessage = async (req, res) => {
   }
 
   try {
-    const encrypted = encrypt(newMessage); // ✅ Re-encrypt message on edit
+    const encrypted = encrypt(newMessage); 
 
     const updatedMessage = await Messages.findByIdAndUpdate(
       messageId,
@@ -77,12 +77,12 @@ module.exports.editMessage = async (req, res) => {
     );
 
     if (updatedMessage) {
-      return res.json(newMessage); // ✅ Send back plain version
+      return res.json(newMessage); 
     } else {
       return res.status(404).json({ msg: "Message not found." });
     }
   } catch (error) {
-    console.error("❌ editMessage error:", error);
+    console.error("editMessage error:", error);
     return res.status(500).json({ msg: "Internal server error." });
   }
 };
