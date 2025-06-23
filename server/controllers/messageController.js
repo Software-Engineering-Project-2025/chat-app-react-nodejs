@@ -20,11 +20,12 @@ module.exports.getMessages = async (req, res, next) => {
 
       return {
         fromSelf: msg.sender.toString() === from,
-        messageId: msg._id, // ✅ Preserved message ID
+        messageId: msg._id, 
         message: decrypted,
+        date:msg.updatedAt
       };
     });
-
+    
     res.json(projectedMessages);
   } catch (ex) {
     console.error("❌ getMessages error:", ex);

@@ -35,7 +35,11 @@ export default function ChatContainer({ currentChat, socket, currentId }) {
   useEffect(() => {
     if (socket.current) {
       socket.current.on("msg-recieve", (data) => {
-        setArrivalMessage({ fromSelf: false, message: data.msg,messageId:data.messageId });
+        setArrivalMessage({
+          fromSelf: false,
+          message: data.msg,
+          messageId: data.messageId,
+        });
       });
 
       socket.current.on("msg-changed", (data) => {
@@ -79,14 +83,20 @@ export default function ChatContainer({ currentChat, socket, currentId }) {
       message: msg,
     });
     socket.current.emit("send-msg", {
-      messageId:response.data,
+      messageId: response.data,
       to: currentChat._id,
       from: data._id,
       msg,
+      date: new Date().toISOString(),
     });
 
     const msgs = [...messages];
-    msgs.push({ fromSelf: true, message: msg, messageId: response.data });
+    msgs.push({
+      fromSelf: true,
+      message: msg,
+      messageId: response.data,
+      date: new Date().toISOString(),
+    });
     setMessages(msgs);
   };
 
@@ -170,7 +180,7 @@ export default function ChatContainer({ currentChat, socket, currentId }) {
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault(); // Enter ile satır atlamayı engeller
+                          e.preventDefault(); 
                           if (newMessage.trim().length > 0) {
                             handleEditMessage(message.messageId);
                           }
@@ -188,7 +198,45 @@ export default function ChatContainer({ currentChat, socket, currentId }) {
                     />
                   </>
                 ) : (
-                  <p>{message.message}</p>
+                  <p
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        fontSize: "0.75rem",
+                        color: "#aaa",
+                        backgroundColor: "#2f2f2f",
+                        padding: "4px 8px",
+                        borderRadius: "6px",
+                        fontWeight: "500",
+                        lineHeight: "1.2",
+                        textAlign: "center",
+                      }}
+                    >
+                      <span>
+                        {new Date(message.date).toLocaleString("en-US", {
+                          weekday: "short",
+                        })}
+                      </span>
+                      <span>
+                        {new Date(message.date).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false,
+                        })}
+                      </span>
+                    </span>
+
+                    <span style={{ color: "#e0e0e0", fontSize: "1rem" }}>
+                      {message.message}
+                    </span>
+                  </p>
                 )}
               </div>
             </div>
