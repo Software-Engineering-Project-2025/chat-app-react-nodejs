@@ -39,6 +39,7 @@ export default function ChatContainer({ currentChat, socket, currentId }) {
           fromSelf: false,
           message: data.msg,
           messageId: data.messageId,
+          date:new Date().toISOString(),
         });
       });
 
