@@ -15,7 +15,7 @@ module.exports.getMessages = async (req, res, next) => {
       try {
         decrypted = decrypt(msg.message.text);
       } catch (err) {
-        console.error("Decryption failed:", err.message);
+        console.error("❌ Decryption failed:", err.message);
       }
 
       return {
@@ -28,7 +28,7 @@ module.exports.getMessages = async (req, res, next) => {
     
     res.json(projectedMessages);
   } catch (ex) {
-    console.error("getMessages error:", ex);
+    console.error("❌ getMessages error:", ex);
     res.status(500).json({ msg: "Error retrieving messages" });
   }
 };
@@ -50,12 +50,12 @@ module.exports.addMessage = async (req, res, next) => {
     });
 
     if (data) {
-      return res.json(data._id); 
+      return res.json(data._id); // ✅ Return message ID directly
     } else {
       return res.status(500).json({ msg: "Failed to add message to the database" });
     }
   } catch (ex) {
-    console.error("addMessage error:", ex);
+    console.error("❌ addMessage error:", ex);
     res.status(500).json({ msg: "Server error while adding message" });
   }
 };
@@ -68,7 +68,7 @@ module.exports.editMessage = async (req, res) => {
   }
 
   try {
-    const encrypted = encrypt(newMessage); 
+    const encrypted = encrypt(newMessage); // ✅ Re-encrypt message on edit
 
     const updatedMessage = await Messages.findByIdAndUpdate(
       messageId,
@@ -77,30 +77,12 @@ module.exports.editMessage = async (req, res) => {
     );
 
     if (updatedMessage) {
-      return res.json(newMessage);
+      return res.json(newMessage); // ✅ Send back plain version
     } else {
       return res.status(404).json({ msg: "Message not found." });
     }
   } catch (error) {
-    console.error("editMessage error:", error);
-    return res.status(500).json({ msg: "Internal server error." });
-  }
-};
-
-module.exports.deleteMessage = async (req, res) => {
-  const { messageId } = req.body;
-  if (!messageId) {
-    return res.status(400).json({ msg: "Missing required fields." });
-  }
-  try {
-    const deleted = await Messages.findByIdAndDelete(messageId);
-    if (deleted) {
-      return res.json({ success: true });
-    } else {
-      return res.status(404).json({ msg: "Message not found." });
-    }
-  } catch (error) {
-    console.error("deleteMessage error:", error);
+    console.error("❌ editMessage error:", error);
     return res.status(500).json({ msg: "Internal server error." });
   }
 };

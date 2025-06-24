@@ -65,13 +65,6 @@ io.on("connection", (socket) => {
     }
   })
 
-  socket.on("send-deleted-msg", (data) => {
-    const findUserSocket = global.onlineUsers.get(data.to);
-    if (findUserSocket) {
-      io.to(findUserSocket).emit("msg-deleted", data);
-    }
-  });
-
   socket.on("disconnect", () => {
     onlineUsers.forEach((value, key) => {
       if (value === socket.id) {
